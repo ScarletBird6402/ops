@@ -7,7 +7,7 @@
 > 공개 산출물 레포(swe-notes · ai-engineering-notes · algorithm-notes)에 운영 문서가 발견되면
 > 게시-검증 에이전트가 FAIL 처리한다. 티어를 섞지 말 것.
 
-## 폴더 구조 (ops_레포_설계 §1 / ops_파일배치_가이드)
+## 폴더 구조 (control/ops_운영.md §1·§5)
 
 | 폴더 | 들어가는 것 | 민감도 |
 |---|---|---|
