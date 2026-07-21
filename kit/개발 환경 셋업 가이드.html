@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>개발 환경 셋업 가이드 — Windows + RHEL 9.8</title>
+<style>
+:root{
+  --paper:#F1F3F6; --card:#FFFFFF; --ink:#18222D; --sub:#5A6774; --line:#D7DEE6;
+  --accent:#E4580B; --accent-soft:#FDEEE4;
+  --win:#0B5FAD; --win-soft:#E7F1FB;
+  --lin:#0E8A5F; --lin-soft:#E6F5EE;
+  --danger:#C22B1E; --danger-soft:#FBE9E7;
+  --tip:#8A6D00; --tip-soft:#FBF3D9;
+  --code-bg:#1B2530; --code-ink:#DDE6EF;
+  --mono:"Cascadia Code","Consolas","SF Mono","Menlo",monospace;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth; scroll-padding-top:64px;}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:"Segoe UI","Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  font-size:16.5px; line-height:1.68;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:880px; margin:0 auto; padding:0 18px 90px;}
+
+/* ── header ── */
+header{padding:44px 0 10px;}
+.doc-kicker{
+  display:inline-block; font-family:var(--mono); font-size:12.5px; letter-spacing:.14em;
+  color:var(--accent); border:1.5px solid var(--accent); border-radius:3px;
+  padding:3px 9px; margin-bottom:14px; font-weight:600;
+}
+h1{font-size:clamp(26px,5.4vw,38px); line-height:1.25; letter-spacing:-.015em; font-weight:800;}
+.doc-sub{color:var(--sub); margin-top:10px; font-size:15.5px; max-width:640px;}
+.doc-meta{
+  display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; font-family:var(--mono); font-size:12.5px;
+}
+.doc-meta span{background:var(--card); border:1px solid var(--line); border-radius:4px; padding:4px 10px; color:var(--sub);}
+
+/* ── phase nav ── */
+nav{
+  position:sticky; top:0; z-index:50; background:rgba(241,243,246,.94);
+  backdrop-filter:blur(6px); border-bottom:1px solid var(--line);
+  margin:26px -18px 0; padding:10px 18px;
+}
+.nav-row{display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; max-width:880px; margin:0 auto;}
+.nav-row::-webkit-scrollbar{display:none;}
+.nav-chip{
+  flex:0 0 auto; text-decoration:none; color:var(--sub); background:var(--card);
+  border:1px solid var(--line); border-radius:99px; padding:5px 12px;
+  font-size:13px; font-weight:600; white-space:nowrap;
+}
+.nav-chip b{color:var(--accent); font-family:var(--mono); font-weight:700; margin-right:4px;}
+
+/* ── disk map (signature) ── */
+.diskmap{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:22px 20px; margin-top:26px;}
+.diskmap h2{font-size:15px; letter-spacing:.08em; color:var(--sub); font-weight:700; margin-bottom:4px; text-transform:uppercase; font-family:var(--mono);}
+.diskmap p.goal{font-size:14.5px; color:var(--sub); margin-bottom:18px;}
+.disk-label{display:flex; justify-content:space-between; align-items:baseline; margin:16px 0 7px;}
+.disk-label strong{font-size:15px;}
+.disk-label span{font-family:var(--mono); font-size:12px; color:var(--sub);}
+.diskbar{display:flex; width:100%; height:46px; border-radius:6px; overflow:hidden; border:1px solid var(--line);}
+.seg{display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11.5px; font-weight:700; color:#fff; min-width:34px; padding:0 2px; text-align:center; line-height:1.2;}
+.seg small{font-weight:400; opacity:.85;}
+.s-boot{background:#43505D;} .s-win{background:var(--win);} .s-root{background:#0A6B4A;}
+.s-home{background:var(--lin);} .s-ntfs{background:#3D77B8;} .s-xfs{background:#159873;}
+.legend{display:flex; flex-wrap:wrap; gap:12px; margin-top:14px; font-size:13px; color:var(--sub);}
+.legend i{display:inline-block; width:11px; height:11px; border-radius:2px; margin-right:5px; vertical-align:-1px;}
+
+/* ── phases ── */
+section{margin-top:46px;}
+.phase-head{display:flex; align-items:flex-start; gap:16px; border-top:3px solid var(--ink); padding-top:16px;}
+.phase-num{
+  font-family:var(--mono); font-size:clamp(38px,7vw,54px); font-weight:700; line-height:.95;
+  color:transparent; -webkit-text-stroke:1.6px var(--accent);
+}
+.phase-title h2{font-size:clamp(20px,4.2vw,26px); font-weight:800; letter-spacing:-.01em;}
+.phase-title p{color:var(--sub); font-size:14.5px; margin-top:4px;}
+.env{display:inline-block; font-family:var(--mono); font-size:11.5px; font-weight:700; border-radius:3px; padding:2px 8px; margin-left:8px; vertical-align:2px;}
+.env-win{background:var(--win-soft); color:var(--win);}
+.env-lin{background:var(--lin-soft); color:var(--lin);}
+.env-hw{background:#E9ECF1; color:#43505D;}
+
+/* steps */
+.step{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin-top:14px;}
+.step-check{display:flex; gap:12px; align-items:flex-start; cursor:pointer;}
+.step-check input{width:20px; height:20px; margin-top:3px; accent-color:var(--accent); flex:0 0 auto; cursor:pointer;}
+.step-check .t{font-weight:700; font-size:16px;}
+.step-check input:checked ~ div .t{color:var(--sub); text-decoration:line-through; text-decoration-color:var(--accent); text-decoration-thickness:2px;}
+.step-body{margin-top:8px; padding-left:32px; font-size:15.5px; color:#2A3642;}
+.step-body ul,.step-body ol{padding-left:20px; margin-top:6px;}
+.step-body li{margin-top:5px;}
+.step-body li::marker{color:var(--accent); font-weight:700;}
+
+/* callouts */
+.co{border-radius:8px; padding:12px 14px 12px 16px; margin-top:12px; font-size:14.5px; border-left:4px solid;}
+.co b:first-child{display:block; font-size:13px; letter-spacing:.06em; margin-bottom:3px; font-family:var(--mono);}
+.co-warn{background:var(--danger-soft); border-color:var(--danger); color:#5A1710;}
+.co-warn b:first-child{color:var(--danger);}
+.co-tip{background:var(--tip-soft); border-color:#C9A227; color:#4E3E00;}
+.co-tip b:first-child{color:var(--tip);}
+.co-ok{background:var(--lin-soft); border-color:var(--lin); color:#0B4A34;}
+.co-ok b:first-child{color:var(--lin);}
+
+/* code */
+pre{
+  background:var(--code-bg); color:var(--code-ink); font-family:var(--mono);
+  font-size:13.5px; line-height:1.6; border-radius:8px; padding:14px 16px;
+  overflow-x:auto; margin-top:10px; white-space:pre;
+}
+pre .c{color:#7E93A8;} pre .hl{color:#FFB56B; font-weight:700;}
+code{font-family:var(--mono); font-size:.92em; background:#E7EBF0; border-radius:4px; padding:1.5px 6px;}
+kbd{font-family:var(--mono); font-size:.85em; background:var(--card); border:1px solid var(--line); border-bottom-width:2.5px; border-radius:5px; padding:1.5px 7px; font-weight:700;}
+
+/* tables */
+table{width:100%; border-collapse:collapse; margin-top:10px; font-size:14.5px; background:var(--card);}
+th,td{border:1px solid var(--line); padding:8px 11px; text-align:left; vertical-align:top;}
+th{background:#EAEEF3; font-size:13.5px;}
+td code{white-space:nowrap;}
+
+/* troubleshooting */
+.qa{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin-top:12px;}
+.qa .q{font-weight:800; font-size:15.5px;}
+.qa .q::before{content:"Q "; color:var(--accent); font-family:var(--mono);}
+.qa .a{margin-top:7px; font-size:15px; color:#2A3642;}
+
+footer{margin-top:60px; border-top:1px solid var(--line); padding-top:16px; color:var(--sub); font-size:13.5px;}
+
+@media (max-width:560px){
+  body{font-size:16px;}
+  .step-body{padding-left:0;}
+  .seg{font-size:10px;}
+}
+@media print{
+  nav{display:none;}
+  body{background:#fff;}
+  .step,.diskmap,.qa{break-inside:avoid;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="doc-kicker">DEV ENVIRONMENT SETUP</div>
+  <h1>개발 환경 셋업 가이드<br>Windows 11 + RHEL 9.8</h1>
+  <p class="doc-sub">C++(C++11) · Python 3.12.7 · Java 21(LTS) 3개 언어를 양쪽 OS에, Spring·Node.js·Docker·DB는 개발용 OS(RHEL)에만. 컴파일러·디버거·빌드 도구·VSCode 설정·검증까지.</p>
+  <div class="doc-meta">
+    <span>선행: 듀얼부팅 설치 가이드 완료</span>
+    <span>IDE: VSCode(범용) + IntelliJ(Java/Spring)</span>
+    <span>예상 소요 2~3시간 (다운로드 별도)</span>
+  </div>
+</header>
+
+<nav><div class="nav-row">
+  <a class="nav-chip" href="#p0"><b>0</b>버전 정책</a>
+  <a class="nav-chip" href="#p1"><b>1</b>Windows 언어</a>
+  <a class="nav-chip" href="#p2"><b>2</b>RHEL 언어</a>
+  <a class="nav-chip" href="#p3"><b>3</b>RHEL 플랫폼</a>
+  <a class="nav-chip" href="#p4"><b>4</b>VSCode</a>
+  <a class="nav-chip" href="#p5"><b>5</b>IntelliJ</a>
+  <a class="nav-chip" href="#p6"><b>6</b>최종 검증</a>
+  <a class="nav-chip" href="#ts"><b>?</b>문제 해결</a>
+</div></nav>
+
+<div class="diskmap">
+  <h2>Install Matrix — 무엇을 어디에</h2>
+  <p class="goal">언어 3종은 양쪽 공통, 플랫폼은 개발용 OS 전용이라는 원칙의 전체 지도입니다.</p>
+  <table>
+    <tr><th>구성 요소</th><th>Windows (일상용)</th><th>RHEL 9.8 (개발용)</th></tr>
+    <tr><td><b>C++</b> — 컴파일러/디버거/빌더</td><td>MSYS2: GCC · GDB · CMake · make</td><td>GCC 11 · GDB · CMake · make</td></tr>
+    <tr><td><b>Python 3.12.7</b> (정확 버전)</td><td>공식 설치본 3.12.7</td><td>pyenv로 3.12.7 빌드</td></tr>
+    <tr><td><b>Java</b> — JDK 21 (LTS)</td><td>Temurin 21</td><td>java-21-openjdk</td></tr>
+    <tr><td><b>빌드 도구</b> — Maven (Gradle 선택)</td><td>Maven zip</td><td>SDKMAN으로 Maven/Gradle</td></tr>
+    <tr><td><b>VSCode + 확장</b></td><td>✔</td><td>✔ (동일 확장 세트)</td></tr>
+    <tr><td><b>IntelliJ IDEA</b> (무료 범위)</td><td>✔ winget</td><td>✔ tar.gz → /opt</td></tr>
+    <tr><td><b>Git</b></td><td>Git for Windows</td><td>dnf git</td></tr>
+    <tr><td><b>Node.js</b> (LTS)</td><td style="color:var(--sub)">—</td><td>nvm으로 설치</td></tr>
+    <tr><td><b>Spring Boot 개발 스택</b></td><td style="color:var(--sub)">—</td><td>JDK 21 + Maven + Initializr</td></tr>
+    <tr><td><b>Docker + Compose</b></td><td style="color:var(--sub)">—</td><td>Docker CE</td></tr>
+    <tr><td><b>PostgreSQL · Redis</b> (미니PJ)</td><td style="color:var(--sub)">—</td><td>Docker 컨테이너로</td></tr>
+  </table>
+</div>
+
+<!-- ═════════ PHASE 0 ═════════ -->
+<section id="p0">
+  <div class="phase-head">
+    <div class="phase-num">00</div>
+    <div class="phase-title">
+      <h2>버전 정책 — 먼저 이해하고 시작</h2>
+      <p>이 가이드의 버전 선택에는 이유가 있습니다. 여기만 읽으면 나머지는 손이 가는 대로.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div style="font-weight:800; font-size:16px;">Java는 21 하나로 — JDK 8은 설치하지 않는다</div>
+    <div class="step-body" style="margin-top:8px;">
+      <ul>
+        <li><b>JDK 21 (LTS)</b> 단일 구성. 미니PJ의 Spring Boot 3.x가 Java 17 이상 필수이고, VSCode Java 확장(언어 서버) 구동에도 17+가 필요합니다 — 21 하나가 전부를 충족합니다.</li>
+        <li><b>JDK 8을 개인 환경에 두지 않는 이유</b>: 업무 8 경험은 회사에서 매일 쌓이므로 재현 가치가 낮고, 이중 JDK는 JAVA_HOME 전환·보안 패치·IDE 런타임 설정이라는 관리 포인트만 늘립니다. 관리 대상 최소화 원칙.</li>
+        <li>8 언어 레벨 확인이 정말 필요해지는 순간이 오면(예: 회사 코드 조각 검증) 그때 <code>sdk install java 8.0.x-tem</code>(SDKMAN) 한 줄로 일시 추가하면 됩니다 — 지금 미리 깔 이유가 없습니다.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div style="font-weight:800; font-size:16px;">Python 3.12.7 — "정확히 그 버전"을 잡는 법</div>
+    <div class="step-body" style="margin-top:8px;">
+      <ul>
+        <li>Windows: python.org에 3.12.7 설치본이 아카이브로 남아 있어 그대로 설치.</li>
+        <li>RHEL: dnf의 <code>python3.12</code>는 최신 패치(3.12.x)로 계속 움직여서 .7 고정이 안 됩니다. 그래서 <b>pyenv로 3.12.7을 소스 빌드</b>해 고정합니다 — 버전 고정이 필요한 환경에서 쓰는 표준 방식이고, 나중에 다른 버전 병행도 자유로워집니다.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div style="font-weight:800; font-size:16px;">C++11 — 컴파일러는 넉넉하고, 표준 플래그로 고정</div>
+    <div class="step-body" style="margin-top:8px;">
+      <ul>
+        <li>RHEL 9.8 기본 GCC 11, MSYS2의 GCC 최신판 모두 C++11을 완전 지원합니다. 별도 구버전 컴파일러가 필요한 게 아니라, <b>빌드 시 <code>-std=c++11</code> 플래그로 표준을 고정</b>하는 방식입니다(업무 코드 호환 확인용). VSCode 설정에 포함해뒀습니다.</li>
+        <li>Windows에서 MSVC(Visual Studio) 대신 <b>MSYS2 GCC</b>를 쓰는 이유: 업무·개발 OS가 Linux/GCC 계열이므로 같은 컴파일러 계열로 맞추면 양쪽 동작 차이를 신경 쓸 일이 없습니다.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════ PHASE 1 ═════════ -->
+<section id="p1">
+  <div class="phase-head">
+    <div class="phase-num">01</div>
+    <div class="phase-title">
+      <h2>Windows — 언어 3종 + 기본 도구 <span class="env env-win">WINDOWS</span></h2>
+      <p>winget(기본 내장 패키지 관리자)으로 대부분 한 줄씩 끝냅니다. 터미널은 시작 우클릭 → 터미널(관리자).</p>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">Git + VSCode</span></div></label>
+    <div class="step-body">
+<pre>winget install --id Git.Git -e
+winget install --id Microsoft.VisualStudioCode -e</pre>
+      <ul><li>설치 후 새 터미널에서 <code>git --version</code> 확인. 사용자 설정:</li></ul>
+<pre>git config --global user.name  "이름"
+git config --global user.email "본인@이메일"
+git config --global core.autocrlf true    <span class="c"># Windows 쪽 개행 처리 표준</span></pre>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">C++ — MSYS2 (GCC·GDB·CMake·make)</span></div></label>
+    <div class="step-body">
+<pre>winget install --id MSYS2.MSYS2 -e</pre>
+      <ol>
+        <li>시작 메뉴에서 <b>MSYS2 UCRT64</b> 셸 실행 후:</li>
+      </ol>
+<pre>pacman -Syu                    <span class="c"># 첫 실행 시 셸이 닫히면 다시 열어 한 번 더</span>
+pacman -S mingw-w64-ucrt-x86_64-toolchain \
+          mingw-w64-ucrt-x86_64-cmake \
+          mingw-w64-ucrt-x86_64-gdb</pre>
+      <ol start="2">
+        <li><b>PATH 등록</b>: 설정 → 시스템 → 정보 → 고급 시스템 설정 → 환경 변수 → Path에 <code>C:\msys64\ucrt64\bin</code> 추가.</li>
+        <li>새 터미널에서 확인: <code>g++ --version</code> · <code>gdb --version</code> · <code>cmake --version</code></li>
+      </ol>
+      <div class="co co-tip"><b>TIP</b>업무 코드가 MSVC(Visual Studio) 기반으로 판명되면 그때 <code>winget install Microsoft.VisualStudio.2022.BuildTools</code>를 추가하면 됩니다. 지금은 GCC 계열 통일이 학습 효율상 정답.</div>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">Python 3.12.7 (정확 버전)</span></div></label>
+    <div class="step-body">
+<pre>winget install --id Python.Python.3.12 -e --version 3.12.7</pre>
+      <ul>
+        <li>또는 python.org/downloads/release/python-3127 에서 "Windows installer (64-bit)" 직접 설치 — 이때 <b>"Add python.exe to PATH" 체크 필수</b>.</li>
+        <li>확인: <code>python --version</code> → <code>Python 3.12.7</code>. 프로젝트별 가상환경은 <code>python -m venv .venv</code> 습관을 권장.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">Java — JDK 21 (LTS)</span></div></label>
+    <div class="step-body">
+<pre>winget install --id EclipseAdoptium.Temurin.21.JDK -e</pre>
+      <ul>
+        <li><code>JAVA_HOME</code> 환경 변수를 <code>C:\Program Files\Eclipse Adoptium\jdk-21...</code> 경로로 등록.</li>
+        <li>확인: 새 터미널에서 <code>java -version</code> → 21.x 출력.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">Maven</span></div></label>
+    <div class="step-body">
+      <ol>
+        <li>maven.apache.org/download → <b>Binary zip archive</b> 다운로드 → <code>C:\tools\apache-maven-3.9.x</code>에 압축 해제.</li>
+        <li>환경 변수 Path에 <code>C:\tools\apache-maven-3.9.x\bin</code> 추가.</li>
+        <li>확인: <code>mvn -v</code> — Java version이 21로 나오면 정상(JAVA_HOME을 따라감).</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════ PHASE 2 ═════════ -->
+<section id="p2">
+  <div class="phase-head">
+    <div class="phase-num">02</div>
+    <div class="phase-title">
+      <h2>RHEL 9.8 — 언어 3종 <span class="env env-lin">LINUX</span></h2>
+      <p>선행: subscription-manager 등록 + EPEL 활성화(듀얼부팅 가이드 Phase 5). 모두 터미널 작업입니다.</p>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">C++ — 개발 도구 일괄 + 디버거·빌더</span></div></label>
+    <div class="step-body">
+<pre>sudo dnf group install "Development Tools"   <span class="c"># gcc·g++·make·git 등 일괄</span>
+sudo dnf install gdb cmake</pre>
+      <ul>
+        <li>확인: <code>g++ --version</code>(11.x) · <code>gdb --version</code> · <code>cmake --version</code></li>
+        <li>C++11 컴파일은 <code>g++ -std=c++11 -g main.cpp</code> — <code>-g</code>는 GDB 디버깅 심볼.</li>
+      </ul>
+      <div class="co co-tip"><b>TIP</b>나중에 최신 GCC가 필요해지면 병행 설치가 가능합니다: <code>sudo dnf install gcc-toolset-14</code> 후 <code>scl enable gcc-toolset-14 bash</code>로 그 셸에서만 활성화. 기본 GCC 11은 그대로 유지됩니다.</div>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">Python 3.12.7 — pyenv로 정확 버전 고정</span></div></label>
+    <div class="step-body">
+<pre><span class="c"># 1) 소스 빌드 의존성</span>
+sudo dnf install zlib-devel bzip2 bzip2-devel readline-devel sqlite \
+  sqlite-devel openssl-devel tk-devel libffi-devel xz-devel
+
+<span class="c"># 2) pyenv 설치</span>
+curl -fsSL https://pyenv.run | bash
+
+<span class="c"># 3) 셸 연동 — ~/.bashrc 끝에 추가</span>
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+
+<span class="c"># 4) 새 터미널 열고 3.12.7 빌드·기본 지정</span>
+pyenv install 3.12.7
+pyenv global 3.12.7
+python --version        <span class="c"># Python 3.12.7</span></pre>
+      <ul><li>시스템 파이썬(<code>/usr/bin/python3</code>, 3.9)은 OS 도구용으로 그대로 두고 건드리지 않습니다 — pyenv가 사용자 영역에서만 우선순위를 갖는 안전한 구조입니다.</li></ul>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">Java — JDK 21 (LTS)</span></div></label>
+    <div class="step-body">
+<pre>sudo dnf install java-21-openjdk-devel
+java -version                      <span class="c"># 21.x 확인</span></pre>
+      <ul><li>단일 JDK 구성이라 alternatives 전환도 불필요합니다. 언젠가 다른 버전이 잠깐 필요해지면 SDKMAN(<code>sdk install java</code>)으로 일시 추가 — 시스템 JDK는 21 하나로 유지.</li></ul>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">Maven (+ Gradle) — SDKMAN으로</span></div></label>
+    <div class="step-body">
+<pre>curl -s "https://get.sdkman.io" | bash
+source "$HOME/.sdkman/bin/sdkman-init.sh"
+sdk install maven
+sdk install gradle          <span class="c"># 선택 — Spring Initializr에서 Gradle 프로젝트를 만들 경우</span>
+mvn -v</pre>
+      <ul><li>SDKMAN은 Java 생태계 도구의 버전 관리자입니다(pyenv의 Java판). 나중에 특정 Maven/Gradle 버전 고정이 필요할 때도 <code>sdk use</code>로 해결됩니다.</li></ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════ PHASE 3 ═════════ -->
+<section id="p3">
+  <div class="phase-head">
+    <div class="phase-num">03</div>
+    <div class="phase-title">
+      <h2>RHEL 전용 — 플랫폼 스택 <span class="env env-lin">LINUX</span></h2>
+      <p>Node.js · Docker · 미니PJ용 DB까지. 개발용 OS에만 설치하는 것들입니다.</p>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">Node.js — nvm으로 LTS 설치</span></div></label>
+    <div class="step-body">
+<pre>curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+<span class="c"># 새 터미널 열고:</span>
+nvm install --lts
+node -v && npm -v</pre>
+      <ul><li>nvm은 Node 버전 관리자입니다. 목표 회사의 Node 버전을 알게 되면 <code>nvm install 그버전</code> 한 줄로 병행 설치·전환 가능 — 지금은 최신 LTS로 시작.</li></ul>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">Docker CE + Compose</span></div></label>
+    <div class="step-body">
+<pre>sudo dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+sudo dnf install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER      <span class="c"># 로그아웃/로그인 후 적용</span>
+docker run hello-world             <span class="c"># 재로그인 후 sudo 없이 되는지 확인</span></pre>
+      <div class="co co-tip"><b>참고 — Podman</b>RHEL에는 Podman이 기본 탑재되어 있고 업무 환경에서 만날 가능성이 높습니다. 명령이 Docker와 거의 동일해서(<code>alias docker=podman</code>이 통할 정도) Docker로 익히면 그대로 전이됩니다. CI/CD 연습은 생태계가 넓은 Docker 기준으로 진행.</div>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">미니PJ 인프라 — PostgreSQL + Redis 컨테이너</span></div></label>
+    <div class="step-body">
+      <ul><li>로컬 설치 대신 컨테이너로 — 미니PJ의 Docker 연습 목적과도 맞고, 초기화가 깨끗합니다. <code>swe-projects/url-shortener/docker-compose.yml</code>:</li></ul>
+<pre>services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: shortener
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: devpass   <span class="c"># 로컬 전용 — 공개 레포에 실비밀번호 금지</span>
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+  cache:
+    image: redis:7
+    ports: ["6379:6379"]
+volumes:
+  pgdata:                          <span class="c"># NVMe(홈 디렉터리) 볼륨 — HDD 금지 원칙 준수</span></pre>
+<pre>docker compose up -d
+docker compose ps                  <span class="c"># db·cache 모두 running 확인</span></pre>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">Spring Boot — "설치"가 아니라 생성</span></div></label>
+    <div class="step-body">
+      <ul>
+        <li>Spring은 별도 설치물이 없습니다. <b>JDK 21 + Maven이 곧 Spring 개발 환경</b>이고, 프로젝트는 start.spring.io(Spring Initializr)에서 생성합니다.</li>
+        <li>미니PJ 시작 시 선택값: Maven · Java 21 · Spring Boot 3.x · Dependencies: <code>Spring Web</code>, <code>Spring Data JPA</code>, <code>PostgreSQL Driver</code>, <code>Spring Data Redis</code>, <code>Validation</code>.</li>
+        <li>생성된 zip을 <code>swe-projects/url-shortener/server/</code>에 풀고 <code>./mvnw spring-boot:run</code>으로 기동 확인.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════ PHASE 4 ═════════ -->
+<section id="p4">
+  <div class="phase-head">
+    <div class="phase-num">04</div>
+    <div class="phase-title">
+      <h2>VSCode — 확장과 설정 <span class="env env-win">WIN</span><span class="env env-lin">LINUX</span></h2>
+      <p>양쪽 OS 동일하게 세팅합니다. RHEL 쪽 설치부터, 그다음 공통 확장·설정.</p>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">RHEL에 VSCode 설치 <span class="env env-lin">LINUX</span></span></div></label>
+    <div class="step-body">
+<pre>sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+sudo tee /etc/yum.repos.d/vscode.repo << 'EOF'
+[code]
+name=Visual Studio Code
+baseurl=https://packages.microsoft.com/yumrepos/vscode
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc
+EOF
+sudo dnf install code</pre>
+      <div class="co co-tip"><b>TIP — 설정 동기화</b>VSCode의 Settings Sync(GitHub/MS 계정)를 켜두면 Windows에서 세팅한 확장·설정이 RHEL 쪽에 자동 복제됩니다. 두 번 세팅할 필요가 없어져요.</div>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">확장 설치 — 언어별 필수 세트</span></div></label>
+    <div class="step-body">
+      <ul><li>터미널에서 일괄 설치(양쪽 OS 공통):</li></ul>
+<pre>code --install-extension ms-vscode.cpptools-extension-pack   <span class="c"># C++ + CMake Tools</span>
+code --install-extension ms-python.python                    <span class="c"># Python + Pylance + debugpy</span>
+code --install-extension vscjava.vscode-java-pack            <span class="c"># Java 필수 6종</span>
+code --install-extension vmware.vscode-boot-dev-pack         <span class="c"># Spring Boot 지원</span>
+code --install-extension ms-azuretools.vscode-containers     <span class="c"># 컨테이너 관리</span>
+code --install-extension eamodio.gitlens                     <span class="c"># Git 히스토리 심화</span>
+code --install-extension dbaeumer.vscode-eslint              <span class="c"># Node/JS 린트 (RHEL)</span></pre>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">핵심 설정 — settings.json</span></div></label>
+    <div class="step-body">
+      <ul><li><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> → "Open User Settings (JSON)" → 아래 병합:</li></ul>
+<pre>{
+  <span class="c">// Java: 단일 JDK 21 — JAVA_HOME이 잡혀 있으면 자동 인식되어 이 줄도 생략 가능</span>
+  "java.jdt.ls.java.home": "<span class="hl">JDK21 경로</span>",
+  <span class="c">// C++: 표준을 C++11로 고정</span>
+  "C_Cpp.default.cppStandard": "c++11",
+  "C_Cpp.default.cStandard": "c11",
+  <span class="c">// Python: 저장 시 자동 포맷 없는 담백한 시작</span>
+  "python.terminal.activateEnvironment": true
+}</pre>
+      <table>
+        <tr><th></th><th>JDK 21 경로</th></tr>
+        <tr><td><b>Windows</b></td><td><code>C:\Program Files\Eclipse Adoptium\jdk-21...</code></td></tr>
+        <tr><td><b>RHEL</b></td><td><code>/usr/lib/jvm/java-21-openjdk</code></td></tr>
+      </table>
+      <ul><li>단일 JDK 구성이라 런타임 매핑 설정 없이도 언어 서버·컴파일 모두 21로 일관됩니다.</li></ul>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">C++ 빌드·디버그 확인 (스모크 테스트)</span></div></label>
+    <div class="step-body">
+      <ul>
+        <li>아무 폴더에 <code>main.cpp</code> 하나 만들고 → 실행·디버그(<kbd>F5</kbd>) → "C/C++ (gdb) 시작" 선택 시 tasks.json이 자동 생성됩니다. 생성된 tasks.json의 <code>args</code>에 <code>"-std=c++11"</code> 한 줄을 추가해두면 빌드 표준이 고정됩니다.</li>
+        <li>중단점 찍고 <kbd>F5</kbd> → 변수 창에 값이 보이면 컴파일러·디버거·에디터 연동 완성.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════ PHASE 5 ═════════ -->
+<section id="p5">
+  <div class="phase-head">
+    <div class="phase-num">05</div>
+    <div class="phase-title">
+      <h2>IntelliJ IDEA 설치·구성 <span class="env env-win">WIN</span><span class="env env-lin">LINUX</span></h2>
+      <p>업무 도구가 IntelliJ 체제로 정렬됨에 따라 개인 환경도 동일 도구로 맞춥니다(도구 패리티). 역할 분담: <b>VSCode = 범용 주력(C++·Python·Vue·스크립트)</b>, <b>IntelliJ = Java/Spring 전용(미니PJ 서버)</b>. 무료 범위(Community 기능)로 충분 — Ultimate 결제는 불요.</p>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">Windows 설치</span></div></label>
+    <div class="step-body">
+<pre>winget install --id JetBrains.IntelliJIDEA.Community -e</pre>
+      <ul>
+        <li>2025.3부터 IntelliJ는 Community/Ultimate 구분이 없는 통합 배포판(무료 모드 포함)으로 바뀌었습니다. winget 검색 결과가 통합판 단일 항목으로 보이면 그걸 설치하면 됩니다 — 무료 모드가 기존 Community 기능을 그대로 포함합니다.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">RHEL 설치 (tar.gz → /opt)</span></div></label>
+    <div class="step-body">
+<pre><span class="c"># jetbrains.com에서 Linux용 tar.gz 다운로드 후:</span>
+sudo tar -xzf idea*.tar.gz -C /opt/
+sudo mv /opt/idea-* /opt/idea
+/opt/idea/bin/idea.sh              <span class="c"># 첫 실행</span></pre>
+      <ul>
+        <li>첫 실행 후 <code>Tools → Create Desktop Entry</code>로 앱 목록에 등록하면 이후 GNOME에서 바로 실행됩니다.</li>
+        <li>대안: JetBrains <b>Toolbox App</b>을 먼저 깔고 그 안에서 IntelliJ를 설치하면 업데이트가 자동 관리됩니다 — 버전 관리를 도구에 맡기고 싶으면 이쪽.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step"><label class="step-check"><input type="checkbox"><div><span class="t">초기 구성 — JDK 2종 등록 + 동기화</span></div></label>
+    <div class="step-body">
+      <ol>
+        <li><b>JDK 등록</b>: <code>File → Project Structure → SDKs → +</code>로 Phase 1·2에서 설치한 <b>JDK 21</b> 등록(대부분 자동 감지됨). 프로젝트 SDK·Language level 모두 21.</li>
+        <li><b>미니PJ 열기</b>: <code>swe-projects/url-shortener/server</code>의 pom.xml 기준으로 Open — Maven 설정은 개인 환경이므로 기본(~/.m2) 그대로면 됩니다.</li>
+        <li><b>Settings Sync</b>: JetBrains 계정으로 로그인해 설정 동기화를 켜면 Windows↔RHEL 양쪽 IntelliJ가 자동으로 같은 상태를 유지합니다(VSCode Settings Sync와 동일 개념).</li>
+        <li><b>(선택) Python 지원</b>: 통합판에 동봉된 Python 플러그인을 활성화하고 인터프리터로 pyenv의 3.12.7(<code>~/.pyenv/versions/3.12.7/bin/python</code>)을 지정하면 Java·Python을 한 창에서 다룰 수 있습니다.</li>
+      </ol>
+      <div class="co co-tip"><b>역할 정리</b>일상 편집·Vue·스크립트·C++ 연습은 VSCode, Spring Boot 서버 작업(미니PJ ①~④ 구현·디버깅·리팩터링)은 IntelliJ — 두 IDE가 같은 폴더를 열어도 충돌하지 않으므로(.idea는 IntelliJ 개인 영역) 작업 성격에 따라 골라 쓰면 됩니다.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════ PHASE 6 ═════════ -->
+<section id="p6">
+  <div class="phase-head">
+    <div class="phase-num">06</div>
+    <div class="phase-title">
+      <h2>최종 검증 체크리스트</h2>
+      <p>모든 줄이 통과하면 개발 환경 셋업 완료입니다. 미니PJ "DB 스키마부터 시작" 선언 가능 상태.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-body" style="padding-left:0">
+      <table>
+        <tr><th>확인 명령</th><th>기대 결과</th><th>OS</th></tr>
+        <tr><td><code>g++ --version && gdb --version && cmake --version</code></td><td>버전 출력</td><td>양쪽</td></tr>
+        <tr><td><code>g++ -std=c++11 -g test.cpp && ./a.out</code></td><td>C++11 컴파일·실행</td><td>양쪽</td></tr>
+        <tr><td><code>python --version</code></td><td><b>Python 3.12.7</b> (정확히)</td><td>양쪽</td></tr>
+        <tr><td><code>java -version</code></td><td>21.x</td><td>양쪽</td></tr>
+        <tr><td><code>mvn -v</code></td><td>Maven 3.9.x + Java 21</td><td>양쪽</td></tr>
+        <tr><td><code>git --version</code></td><td>버전 출력</td><td>양쪽</td></tr>
+        <tr><td><code>node -v && npm -v</code></td><td>LTS 버전</td><td>RHEL</td></tr>
+        <tr><td><code>docker run hello-world</code> (sudo 없이)</td><td>Hello from Docker!</td><td>RHEL</td></tr>
+        <tr><td><code>docker compose up -d && docker compose ps</code></td><td>db·cache running</td><td>RHEL</td></tr>
+        <tr><td>VSCode에서 C++ 중단점 디버깅</td><td>변수 조회 동작</td><td>양쪽</td></tr>
+        <tr><td>IntelliJ에서 미니PJ pom.xml 열기</td><td>JDK 21 인식·인덱싱 완료</td><td>양쪽</td></tr>
+        <tr><td>Spring Initializr 프로젝트 <code>./mvnw spring-boot:run</code></td><td>8080 기동</td><td>RHEL</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════ TROUBLESHOOTING ═════════ -->
+<section id="ts">
+  <div class="phase-head">
+    <div class="phase-num">?!</div>
+    <div class="phase-title">
+      <h2>문제 해결</h2>
+      <p>이 조합에서 실제로 자주 만나는 것들.</p>
+    </div>
+  </div>
+
+  <div class="qa"><div class="q">VSCode Java 확장이 "Java 17 이상이 필요합니다" 오류를 내요</div>
+    <div class="a">언어 서버가 JDK를 못 찾거나 다른 JVM을 물었을 때 나는 오류입니다. <code>JAVA_HOME</code>이 JDK 21을 가리키는지, 또는 settings.json의 <code>java.jdt.ls.java.home</code>이 21 경로인지 확인 → VSCode 재시작.</div>
+  </div>
+
+  <div class="qa"><div class="q">pyenv install 3.12.7이 빌드 중 실패해요</div>
+    <div class="a">십중팔구 의존성 누락입니다. Phase 2의 <code>dnf install zlib-devel ... xz-devel</code> 블록을 다시 실행하고 재시도하세요. 로그에 <code>ssl</code>이 보이면 openssl-devel, <code>_lzma</code>면 xz-devel 누락입니다.</div>
+  </div>
+
+  <div class="qa"><div class="q">docker 명령이 permission denied라고 해요</div>
+    <div class="a"><code>usermod -aG docker</code>는 <b>재로그인해야 적용</b>됩니다. 로그아웃/로그인(또는 재부팅) 후 <code>groups</code> 명령에 docker가 보이는지 확인하세요.</div>
+  </div>
+
+  <div class="qa"><div class="q">Windows 터미널에서 g++를 못 찾아요</div>
+    <div class="a">PATH에 <code>C:\msys64\ucrt64\bin</code>이 등록됐는지, 등록 후 <b>터미널을 새로 열었는지</b> 확인하세요(기존 창엔 반영 안 됨). MSYS2 셸 안에서만 되고 일반 터미널에서 안 되면 100% PATH 문제입니다.</div>
+  </div>
+
+  <div class="qa"><div class="q">mvn이 이상한 Java 버전을 물고 있어요</div>
+    <div class="a">Maven은 <code>JAVA_HOME</code>을 따라갑니다. <code>echo $JAVA_HOME</code>(Windows: <code>echo %JAVA_HOME%</code>)으로 확인하고 JDK 21 경로로 바로잡으세요. 단일 JDK 구성에선 JAVA_HOME=21 고정이 전부입니다.</div>
+  </div>
+
+</section>
+
+<footer>
+  개발 환경 셋업 가이드 · 2026-07 · Windows 11 + RHEL 9.8 · C++11 / Python 3.12.7 / JDK 21 / VSCode·IntelliJ · 선행 문서: 디스크 교체·듀얼부팅 설치 가이드<br>
+  체크박스 상태는 저장되지 않습니다 — 필요하면 인쇄해서 사용하세요.
+</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>디스크 교체·듀얼부팅 작업 QnA 기록</title>
+<style>
+:root{
+  --paper:#F1F3F6; --card:#FFFFFF; --ink:#18222D; --sub:#5A6774; --line:#D7DEE6;
+  --accent:#E4580B; --accent-soft:#FDEEE4;
+  --win:#0B5FAD; --win-soft:#E7F1FB;
+  --lin:#0E8A5F; --lin-soft:#E6F5EE;
+  --danger:#C22B1E; --danger-soft:#FBE9E7;
+  --tip:#8A6D00; --tip-soft:#FBF3D9;
+  --code-bg:#1B2530; --code-ink:#DDE6EF;
+  --mono:"Cascadia Code","Consolas","SF Mono","Menlo",monospace;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth; scroll-padding-top:64px;}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:"Segoe UI","Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  font-size:16.5px; line-height:1.68;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:880px; margin:0 auto; padding:0 18px 90px;}
+
+/* ── header ── */
+header{padding:44px 0 10px;}
+.doc-kicker{
+  display:inline-block; font-family:var(--mono); font-size:12.5px; letter-spacing:.14em;
+  color:var(--accent); border:1.5px solid var(--accent); border-radius:3px;
+  padding:3px 9px; margin-bottom:14px; font-weight:600;
+}
+h1{font-size:clamp(26px,5.4vw,38px); line-height:1.25; letter-spacing:-.015em; font-weight:800;}
+.doc-sub{color:var(--sub); margin-top:10px; font-size:15.5px; max-width:640px;}
+.doc-meta{
+  display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; font-family:var(--mono); font-size:12.5px;
+}
+.doc-meta span{background:var(--card); border:1px solid var(--line); border-radius:4px; padding:4px 10px; color:var(--sub);}
+
+/* ── phase nav ── */
+nav{
+  position:sticky; top:0; z-index:50; background:rgba(241,243,246,.94);
+  backdrop-filter:blur(6px); border-bottom:1px solid var(--line);
+  margin:26px -18px 0; padding:10px 18px;
+}
+.nav-row{display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; max-width:880px; margin:0 auto;}
+.nav-row::-webkit-scrollbar{display:none;}
+.nav-chip{
+  flex:0 0 auto; text-decoration:none; color:var(--sub); background:var(--card);
+  border:1px solid var(--line); border-radius:99px; padding:5px 12px;
+  font-size:13px; font-weight:600; white-space:nowrap;
+}
+.nav-chip b{color:var(--accent); font-family:var(--mono); font-weight:700; margin-right:4px;}
+
+/* ── disk map (signature) ── */
+.diskmap{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:22px 20px; margin-top:26px;}
+.diskmap h2{font-size:15px; letter-spacing:.08em; color:var(--sub); font-weight:700; margin-bottom:4px; text-transform:uppercase; font-family:var(--mono);}
+.diskmap p.goal{font-size:14.5px; color:var(--sub); margin-bottom:18px;}
+.disk-label{display:flex; justify-content:space-between; align-items:baseline; margin:16px 0 7px;}
+.disk-label strong{font-size:15px;}
+.disk-label span{font-family:var(--mono); font-size:12px; color:var(--sub);}
+.diskbar{display:flex; width:100%; height:46px; border-radius:6px; overflow:hidden; border:1px solid var(--line);}
+.seg{display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11.5px; font-weight:700; color:#fff; min-width:34px; padding:0 2px; text-align:center; line-height:1.2;}
+.seg small{font-weight:400; opacity:.85;}
+.s-boot{background:#43505D;} .s-win{background:var(--win);} .s-root{background:#0A6B4A;}
+.s-home{background:var(--lin);} .s-ntfs{background:#3D77B8;} .s-xfs{background:#159873;}
+.legend{display:flex; flex-wrap:wrap; gap:12px; margin-top:14px; font-size:13px; color:var(--sub);}
+.legend i{display:inline-block; width:11px; height:11px; border-radius:2px; margin-right:5px; vertical-align:-1px;}
+
+/* ── phases ── */
+section{margin-top:46px;}
+.phase-head{display:flex; align-items:flex-start; gap:16px; border-top:3px solid var(--ink); padding-top:16px;}
+.phase-num{
+  font-family:var(--mono); font-size:clamp(38px,7vw,54px); font-weight:700; line-height:.95;
+  color:transparent; -webkit-text-stroke:1.6px var(--accent);
+}
+.phase-title h2{font-size:clamp(20px,4.2vw,26px); font-weight:800; letter-spacing:-.01em;}
+.phase-title p{color:var(--sub); font-size:14.5px; margin-top:4px;}
+.env{display:inline-block; font-family:var(--mono); font-size:11.5px; font-weight:700; border-radius:3px; padding:2px 8px; margin-left:8px; vertical-align:2px;}
+.env-win{background:var(--win-soft); color:var(--win);}
+.env-lin{background:var(--lin-soft); color:var(--lin);}
+.env-hw{background:#E9ECF1; color:#43505D;}
+
+/* steps */
+.step{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin-top:14px;}
+.step-check{display:flex; gap:12px; align-items:flex-start; cursor:pointer;}
+.step-check input{width:20px; height:20px; margin-top:3px; accent-color:var(--accent); flex:0 0 auto; cursor:pointer;}
+.step-check .t{font-weight:700; font-size:16px;}
+.step-check input:checked ~ div .t{color:var(--sub); text-decoration:line-through; text-decoration-color:var(--accent); text-decoration-thickness:2px;}
+.step-body{margin-top:8px; padding-left:32px; font-size:15.5px; color:#2A3642;}
+.step-body ul,.step-body ol{padding-left:20px; margin-top:6px;}
+.step-body li{margin-top:5px;}
+.step-body li::marker{color:var(--accent); font-weight:700;}
+
+/* callouts */
+.co{border-radius:8px; padding:12px 14px 12px 16px; margin-top:12px; font-size:14.5px; border-left:4px solid;}
+.co b:first-child{display:block; font-size:13px; letter-spacing:.06em; margin-bottom:3px; font-family:var(--mono);}
+.co-warn{background:var(--danger-soft); border-color:var(--danger); color:#5A1710;}
+.co-warn b:first-child{color:var(--danger);}
+.co-tip{background:var(--tip-soft); border-color:#C9A227; color:#4E3E00;}
+.co-tip b:first-child{color:var(--tip);}
+.co-ok{background:var(--lin-soft); border-color:var(--lin); color:#0B4A34;}
+.co-ok b:first-child{color:var(--lin);}
+
+/* code */
+pre{
+  background:var(--code-bg); color:var(--code-ink); font-family:var(--mono);
+  font-size:13.5px; line-height:1.6; border-radius:8px; padding:14px 16px;
+  overflow-x:auto; margin-top:10px; white-space:pre;
+}
+pre .c{color:#7E93A8;} pre .hl{color:#FFB56B; font-weight:700;}
+code{font-family:var(--mono); font-size:.92em; background:#E7EBF0; border-radius:4px; padding:1.5px 6px;}
+kbd{font-family:var(--mono); font-size:.85em; background:var(--card); border:1px solid var(--line); border-bottom-width:2.5px; border-radius:5px; padding:1.5px 7px; font-weight:700;}
+
+/* tables */
+table{width:100%; border-collapse:collapse; margin-top:10px; font-size:14.5px; background:var(--card);}
+th,td{border:1px solid var(--line); padding:8px 11px; text-align:left; vertical-align:top;}
+th{background:#EAEEF3; font-size:13.5px;}
+td code{white-space:nowrap;}
+
+/* troubleshooting */
+.qa{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin-top:12px;}
+.qa .q{font-weight:800; font-size:15.5px;}
+.qa .q::before{content:"Q "; color:var(--accent); font-family:var(--mono);}
+.qa .a{margin-top:7px; font-size:15px; color:#2A3642;}
+
+footer{margin-top:60px; border-top:1px solid var(--line); padding-top:16px; color:var(--sub); font-size:13.5px;}
+
+@media (max-width:560px){
+  body{font-size:16px;}
+  .step-body{padding-left:0;}
+  .seg{font-size:10px;}
+}
+@media print{
+  nav{display:none;}
+  body{background:#fff;}
+  .step,.diskmap,.qa{break-inside:avoid;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="doc-kicker">BUILD LOG — Q&amp;A RECORD</div>
+  <h1>디스크 교체·듀얼부팅 작업<br>QnA 기록</h1>
+  <p class="doc-sub">2026-07-18~19 실제 작업 중 발생한 질문·문제와 해결의 기록. 가이드 문서(디스크 교체·듀얼부팅 설치 가이드)가 "계획"이라면 이 문서는 "실전에서 실제로 부딪힌 것들"이다. 같은 작업을 반복하거나 유사 문제를 만났을 때의 1차 참조용.</p>
+  <div class="doc-meta">
+    <span>결과: Phase 1~7 완주 (개발환경·Phase 9 제외)</span>
+    <span>총 25건 Q&amp;A</span>
+    <span>동반 문서: 설치 가이드 · 개발환경 셋업 가이드</span>
+  </div>
+</header>
+
+<nav><div class="nav-row">
+  <a class="nav-chip" href="#hw"><b>1</b>하드웨어</a>
+  <a class="nav-chip" href="#bios"><b>2</b>BIOS·부팅</a>
+  <a class="nav-chip" href="#win"><b>3</b>Windows</a>
+  <a class="nav-chip" href="#rhel"><b>4</b>RHEL 설치</a>
+  <a class="nav-chip" href="#storage"><b>5</b>스토리지·fstab</a>
+  <a class="nav-chip" href="#lessons"><b>6</b>교훈 요약</a>
+</div></nav>
+
+<!-- ═════════ 1. 하드웨어 ═════════ -->
+<section id="hw">
+  <div class="phase-head">
+    <div class="phase-num">01</div>
+    <div class="phase-title"><h2>하드웨어 교체</h2><p>물리 작업에서 나온 질문들.</p></div>
+  </div>
+
+  <div class="qa"><div class="q">3.5" 케이지의 HDD가 당겨도 안 나온다</div>
+    <div class="a">순서 문제였다: ① SATA 데이터·전원 케이블 먼저 분리 ② 경로를 막는 케이블 타이 절단 ③ 양쪽 클립을 <b>쥔 채로 유지하며</b> 수평으로 당기기. 걸리면 힘이 아니라 걸림 지점을 찾을 것 — 특히 데이터가 든 디스크는 절대 비틀지 않는다.</div>
+  </div>
+
+  <div class="qa"><div class="q">트레이에서 디스크가 분리되지 않는다 (나사는 다 풀었는데)</div>
+    <div class="a">툴리스 트레이는 나사가 아니라 <b>옆 레일의 핀이 디스크 옆면 나사 구멍에 끼워지는</b> 구조. 레일 가운데를 바깥으로 낭창하게 벌려 핀을 구멍에서 빼내고, 그쪽 모서리를 비스듬히 들어 올리면 분리된다. 힘은 플라스틱 레일에만, 기판 쪽은 지렛대 금지. 새 디스크 장착은 역순.</div>
+  </div>
+
+  <div class="qa"><div class="q">메인보드 뒷면 I/O의 "BIOS FLBK" 버튼과 흰 테두리 USB 포트의 정체는?</div>
+    <div class="a"><b>BIOS FlashBack</b> — CPU·부팅 없이 USB 메모리로 BIOS를 강제 재기록하는 복구 기능. 평시에는 절대 길게 누르지 말 것(USB가 꽂혀 있으면 플래싱 시작). 역으로, 키보드조차 안 듣는 최악 상황에서 BIOS를 업데이트할 수 있는 최후 수단이기도 하다.</div>
+  </div>
+
+  <div class="qa"><div class="q">기존 X300 4TB는 어떻게 처리하나</div>
+    <div class="a">Phase 9까지 <b>대기 상태</b>: 구 시스템 데이터의 마지막 안전망이므로 새 시스템 1~2주 실사용 확인 전에는 포맷하지 않는다. 정전기 방지봉투에 평평하게 보관. 편입 시 SMART(05/C5/C6 = 0) 확인 후 아카이브 전담으로 전환 예정.</div>
+  </div>
+</section>
+
+<!-- ═════════ 2. BIOS·부팅 ═════════ -->
+<section id="bios">
+  <div class="phase-head">
+    <div class="phase-num">02</div>
+    <div class="phase-title"><h2>BIOS · 부팅 체인</h2><p>이번 작업 최대 난관(키보드 먹통)과 부팅 관련 전부.</p></div>
+  </div>
+
+  <div class="qa"><div class="q">Secure Boot에 Disabled가 없고 Standard/Custom뿐이다</div>
+    <div class="a">ASUS 계열은 키 관리로 끄는 구조: <b>Custom 선택 → 키 관리 → PK 삭제</b>, 또는 더 간단히 <b>OS 종류 → 기타 OS</b>. 판정 기준은 Mode 표시가 아니라 <b>"안전 부팅 상태 = Setup"</b>(켜짐이면 User). 키를 지워도 Mode가 Custom인 것은 정상이며, "Restore Default Keys"로 언제든 원복 가능.</div>
+  </div>
+
+  <div class="qa"><div class="q">BIOS 설정 화면에서 손댈 것과 두는 것</div>
+    <div class="a">전압·코어 비율·메모리 주파수 = 전부 자동(기본값) 유지. 확인만 할 것: CSM Disabled, TPM(Firmware TPM) Enabled 유지. DDR5가 4800MHz로 뜨는 것은 JEDEC 기본 속도로 정상이며, XMP는 <b>시스템 안정화 후</b> 필요 시 — 설치 중 변수를 줄이는 것이 우선.</div>
+  </div>
+
+  <div class="qa"><div class="q">GRUB·BIOS에서 키보드·마우스가 전멸했다 (OS에선 정상)</div>
+    <div class="a">이번 작업 최대 이슈. 진단 사슬: OS에서 되고 펌웨어 단계만 죽음 → 하드웨어 고장 아님 → 유선인데도 죽음 → 다른 USB 장치의 열거(enumeration) 방해 의심 → <b>키보드만 남기고 전부 분리 → 범인 검거: Xbox 무선 패드 리시버</b>. Fast Boot 비활성화로 이중 해결. 키보드 없이 BIOS 진입은 <code>sudo systemctl reboot --firmware-setup</code>, OS 전환은 <code>sudo grub2-reboot "항목명"</code>이 유효한 우회로였다.</div>
+  </div>
+
+  <div class="qa"><div class="q">기본 부팅 OS 변경 명령이 안 듣는다</div>
+    <div class="a">GRUB 항목명은 <b>괄호까지 포함한 전체 문자열</b>이 이름이다. "Windows Boot Manager"가 아니라 "Windows Boot Manager (on /dev/nvme0n1p1)". 정확한 이름은 <code>grep ^menuentry /boot/grub2/grub.cfg | cut -d"'" -f2</code>로 뽑고, 설정 후 <code>grub2-editenv list</code>로 검증. 숫자 인덱스는 커널 업데이트 시 순번이 밀리므로 이름 방식 권장.</div>
+  </div>
+
+  <div class="qa"><div class="q">GRUB에 리눅스가 3개나 보인다</div>
+    <div class="a">정상 — ① 최신 커널(기본) ② 이전 커널(새 커널 문제 시 폴백, 기본 3개까지 보관) ③ 0-rescue(응급 구조 통로). 중복 설치가 아니라 커널 이력 관리이며, 업무 RHEL 서버에서도 동일하게 보게 될 구조다.</div>
+  </div>
+</section>
+
+<!-- ═════════ 3. Windows ═════════ -->
+<section id="win">
+  <div class="phase-head">
+    <div class="phase-num">03</div>
+    <div class="phase-title"><h2>Windows 설치·설정</h2><p>OOBE 관문과 배치·수명 관련 판단들.</p></div>
+  </div>
+
+  <div class="qa"><div class="q">MS 로그인 후 "백업된 설정 복원" 제안 — 받아야 하나</div>
+    <div class="a"><b>"새 장치로 설정"을 선택</b>했다. 복원 범위는 개인 설정·Wi-Fi·앱 목록(프로그램 자체 아님)·시작 메뉴 배치, 그리고 <b>OneDrive 폴더 백업 상태</b> — 마지막 것 때문에 거절이 정답. 이전 PC의 폴더 백업 상태가 따라오면 3중 방어로 막아둔 폴더 납치가 복원 경로로 재발한다. 클린 구축에서 잃는 것은 배경화면 수준.</div>
+  </div>
+
+  <div class="qa"><div class="q">사용자 폴더를 D:(SMR)로 옮겨도 되나</div>
+    <div class="a">속성→위치 탭 방식은 공식 지원이라 안전하고, SMR에도 무해(간헐적·파일 단위 쓰기). 단 새 시스템에선 C:가 1.6TB라 전부 옮길 동기가 사라짐 — <b>부피형(다운로드·사진·동영상)만 D:, 소형·민감형(문서·바탕화면)은 C:</b>의 선택적 이동으로 결정. 시점은 OneDrive 차단(KFMBlockOptIn) 완료 후.</div>
+  </div>
+
+  <div class="qa"><div class="q">단순 볼륨 만들기의 할당 단위(클러스터)는?</div>
+    <div class="a">기본값 = 권장값. 크면 작은 파일의 슬랙 낭비, 작으면 대용량 볼륨 오버헤드 — 기본값이 균형점이다. 범용 공유 파티션엔 기본값이 정확히 맞고, XFS의 <code>mkfs</code>도 같은 원리로 기본값 사용.</div>
+  </div>
+
+  <div class="qa"><div class="q">SSD를 오래 쓰는 습관은? (교체 계기가 이전 SSD 수명 소진)</div>
+    <div class="a">원리: 수명 = 쓰기 총량(TBW), 읽기는 무관, 실제 소모는 쓰기 증폭이 좌우. 효과 순 습관: ① <b>용량 15~20% 이상 항상 비워두기(최중요 — 이전 SSD의 사인으로 추정)</b> ② 대량·반복 쓰기는 HDD로(계층화가 구조적으로 해결) ③ TRIM 확인(<code>fsutil behavior query disabledeletenotify</code> / <code>fstrim.timer</code>) ④ 온도(히트싱크로 대응됨) ⑤ <b>990 PRO 펌웨어 최신화(초기 펌웨어 수명 결함 이력 — Magician 확인)</b> ⑥ 정상 종료. 페이지파일 끄기류 구형 최적화는 불필요, 벤치마크 반복은 순수 낭비. 모니터링: 반기 1회 TBW·잔여 수명 — 4TB 보증 2,400TBW면 산술상 수십 년.</div>
+  </div>
+</section>
+
+<!-- ═════════ 4. RHEL 설치 ═════════ -->
+<section id="rhel">
+  <div class="phase-head">
+    <div class="phase-num">04</div>
+    <div class="phase-title"><h2>RHEL 9.8 설치</h2><p>Anaconda 관문들과 설치 직후 설정.</p></div>
+  </div>
+
+  <div class="qa"><div class="q">Red Hat 계정 연결의 "시스템 목적 설정"이란?</div>
+    <div class="a">기업용 구독 매칭 라벨(역할/SLA/용도) — 자산 분류 메타데이터라 어떤 값이든 시스템 동작과 무관. 개인 Developer Subscription은 비워두면 됨. 설치 후 <code>syspurpose</code>로 변경 가능하고, 업무의 subscription-manager에서 재회할 개념.</div>
+  </div>
+
+  <div class="qa"><div class="q">/home이 계획(2.2TB)과 다른 1.87 TiB로 잡힌다</div>
+    <div class="a">단위 효과 2중: ① 설치기는 2진(TiB) 표시 — 4TB 디스크 실총량 3.64 TiB ② diskpart에서 C:를 MB로 잘라 10진 1.76TB를 점유. 잔여 전부가 /home에 갔으므로 <b>사라진 용량은 없음</b>(10진 환산 약 2.06TB). "용량이 모자라 보이는" 착시의 전형 사례.</div>
+  </div>
+
+  <div class="qa"><div class="q">ESP가 "알 수 없음" 그룹에 남아 있었다 (중요)</div>
+    <div class="a">수동 파티셔닝에서 4개 마운트만 추가하고 끝내면 부트로더 자리가 없다. <b>기존 EFI System Partition 클릭 → 마운트 지점 /boot/efi 지정 → 재포맷 절대 금지</b> → "신규 설치" 그룹으로 올라와야 완성. 완료 전 변경 요약에서 ESP가 "포맷" 목록에 없는지 최종 확인 — 이번 작업에서 사전에 잡아낸 유일한 "사고 직전" 항목.</div>
+  </div>
+
+  <div class="qa"><div class="q">변경 요약이 가이드와 다르다 — LVM이 나타났다</div>
+    <div class="a">Anaconda 기본 장치 유형이 LVM이라 /·/home·swap이 "파티션 1개(PV) 안의 논리 볼륨 3개"로 구성됨(/boot은 부트로더가 직접 읽어야 해 자동으로 표준 파티션 분리). 용량·마운트는 계획 그대로이며 오히려 이득: <b>LV는 나중에 크기 재배분 가능("굳는 경계"를 무르게)</b> + 업무 RHEL 표준 구성과 동일한 모양(lvs/vgs 학습 기회).</div>
+  </div>
+
+  <div class="qa"><div class="q">Server with GUI vs Workstation</div>
+    <div class="a">뼈대는 동일, 차이는 패키지 프리셋(관리 도구 vs 데스크톱·개발)과 tuned 프로파일(처리량 vs 균형). 이 머신의 정체는 개발용 데스크톱이므로 <b>Workstation</b> 선택. 비가역 아님 — 서버 도구는 <code>dnf install cockpit</code> 한 줄로 추가 가능.</div>
+  </div>
+
+  <div class="qa"><div class="q">추가 소프트웨어는 뭘 체크하나</div>
+    <div class="a">개발용 툴 + 컨테이너 관리(Podman — 업무 환경 대비·Docker 비교 학습용) 2개만. 원칙: <b>"나중에 한 줄로 추가할 수 있는 것은 지금 깔지 않는다"</b> — 최소로 시작해야 뭐가 뭘 하는지 보이는 시스템이 된다.</div>
+  </div>
+
+  <div class="qa"><div class="q">root 계정 잠금 / root SSH 허용 체크박스</div>
+    <div class="a">둘 다 체크 해제(root 비밀번호는 설정, SSH 거부는 RHEL 9 기본 유지). 근거: 업무 RHEL 재현(root 활성 구성) + 복구 상황의 보험(응급 모드가 root 비밀번호 요구). 일상은 관리자 사용자 + sudo, root는 금고에. — 이 선택이 이후 계정명 변경 작업에서 실제로 값을 했다.</div>
+  </div>
+
+  <div class="qa"><div class="q">150% 같은 비정수 배율이 안 보인다</div>
+    <div class="a">GNOME의 비율 배율은 실험 기능: <code>gsettings set org.gnome.mutter experimental-features "['scale-monitor-framebuffer']"</code> 후 재로그인하면 125/150/175%가 나타남. XWayland(구형 X11) 앱은 흐릿할 수 있어, 거슬리면 대안은 텍스트만 확대(<code>text-scaling-factor 1.5</code> — 항상 선명). NVIDIA 드라이버 설치 후 최종 판단.</div>
+  </div>
+
+  <div class="qa"><div class="q">설치 후 계정명을 바꿔도 되나</div>
+    <div class="a">신규 설치 직후가 최적 타이밍. 제약은 "본인 로그인 중 rename 불가" — 로그아웃 → <kbd>Ctrl+Alt+F3</kbd> 콘솔에서 root 로그인 → <code>usermod -l 새 기존</code> → <code>groupmod -n</code> → <code>usermod -d /home/새 -m</code>. 소유권은 UID 기반이라 자동 유지, wheel(sudo)도 자동 승계. 절차 중간에 그래픽 로그인 복귀 금지.</div>
+  </div>
+</section>
+
+<!-- ═════════ 5. 스토리지·fstab ═════════ -->
+<section id="storage">
+  <div class="phase-head">
+    <div class="phase-num">05</div>
+    <div class="phase-title"><h2>스토리지 · fstab</h2><p>파티션 정체 확인부터 마운트 완성까지.</p></div>
+  </div>
+
+  <div class="qa"><div class="q">lsblk에 처음 보는 16M 파티션이 있다 (sda1, nvme0n1p2)</div>
+    <div class="a"><b>MSR(Microsoft 예약 파티션)</b> — Windows가 GPT 디스크 초기화 시 자동 생성하는 관리용 예약 공간. 파일시스템·드라이브 문자 없음, blkid에서 Unknown으로 보이는 것까지 정상. 두 디스크에 하나씩 있는 게 맞으며 절대 삭제하지 않는다.</div>
+  </div>
+
+  <div class="qa"><div class="q">복사한 UUID는 fstab 어디에 넣나</div>
+    <div class="a">파일 맨 아래 새 줄 — fstab은 한 줄 = 마운트 하나. 필드 6개의 의미: 장치(UUID — 장치명은 부팅마다 바뀔 수 있어 UUID가 표준) / 마운트 지점 / 파일시스템 / 옵션(<code>nofail</code> = 디스크 문제여도 부팅은 되게) / 덤프 0 / fsck 순서(루트 1, 나머지 2, NTFS는 0). 수동 입력 대신 <code>echo "UUID=$(blkid -s UUID -o value /dev/sdX)  ..." | sudo tee -a /etc/fstab</code> 패턴이 오타를 원천 차단.</div>
+  </div>
+
+  <div class="qa"><div class="q">NTFS가 2개다 — Windows와 Shared 중 어느 UUID?</div>
+    <div class="a"><b>Shared(sda2)</b>. Windows C:는 의도적으로 제외 — 시스템 드라이브 상시 마운트는 빠른 시작/절전 잔여 상태와 얽혀 손상 위험이 있고, 두 OS의 접점은 공유 파티션 하나로 좁히는 설계이기도 하다. 라벨 지정 조회가 확실: <code>blkid -t LABEL=Shared</code>. NTFS의 UUID가 짧은 16진수인 것은 정상(파일시스템마다 형식 상이).</div>
+  </div>
+
+  <div class="qa"><div class="q">mount -a가 "failed to access mountpoint" 오류</div>
+    <div class="a">fstab에 줄을 적어도 <b>마운트 지점 디렉터리는 자동 생성되지 않는다</b> — mkdir 누락이 원인의 전부. 부수 확인 습관: fstab 수정 후 <code>findmnt --verify</code>로 사전 검사, <code>mount -a</code>가 조용히 끝나면 문법 검증 통과.</div>
+  </div>
+
+  <div class="qa"><div class="q">폴더 이름을 오타(shard)로 만들었다 — 안전한 삭제법</div>
+    <div class="a">확인(<code>ls -A</code>, <code>mount | grep</code>) 후 <code>sudo rmdir</code> — <b>빈 디렉터리만 지울 수 있어 실수 방지가 내장된 삭제법</b>. 내용물 확인 없이 날리는 <code>rm -rf</code>는 마운트 지점 관리에 쓰지 않는 습관.</div>
+  </div>
+
+  <div class="qa"><div class="q">아카이브 폴더 구조 잡기 — X300으로 이사할 건데 의미 있나</div>
+    <div class="a">있다. 폴더 구조는 디스크가 아니라 <b>/mnt/archive라는 경로에 속하며</b>, Phase 9 이사가 rsync 복제 + fstab UUID 교체 방식이라 구조·데이터가 통째로 새 디스크에 안착하고 경로는 불변. "디스크에 폴더를 판다"가 아니라 <b>"경로에 규칙을 세운다"</b>. 보완: <code>chown</code>으로 소유권을 사용자에게 — 매번 sudo로 파일 넣는 불편 방지.</div>
+  </div>
+</section>
+
+<!-- ═════════ 6. 교훈 요약 ═════════ -->
+<section id="lessons">
+  <div class="phase-head">
+    <div class="phase-num">06</div>
+    <div class="phase-title"><h2>교훈 요약 · 다음 단계</h2><p>이번 세션을 관통한 패턴들.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="step-body" style="padding-left:0">
+      <ul>
+        <li><b>펌웨어 세계와 OS 세계는 다른 규칙으로 돈다</b> — 키보드(USB 열거), Secure Boot(키 관리), 부팅 항목(정확한 문자열). OS 상식이 통하지 않는 구간의 존재를 아는 것 자체가 문제 해결의 절반이었다.</li>
+        <li><b>진단은 배제로 좁힌다</b> — "OS에선 됨 → 고장 아님", "유선인데도 죽음 → 장치 종류 아님", "하나만 남기고 전부 분리 → 범인 특정". 최소 구성 재현이 가장 빠른 길.</li>
+        <li><b>이름·경로는 정확히 일치해야 한다</b> — GRUB 항목명(괄호 포함), fstab 마운트 지점(shard≠shared). 시스템은 유사 일치를 봐주지 않으며, 목록에서 복사하는 습관(grep·blkid -o value)이 오타 자체를 없앤다.</li>
+        <li><b>단위 착시를 알면 놀라지 않는다</b> — TB(10진) vs TiB(2진), MB 절사. "용량이 사라졌다"의 대부분은 계산이 맞다는 뜻.</li>
+        <li><b>기본값은 대부분 정답이다</b> — BIOS 전압, 할당 단위, LVM 구성. 벗어날 때는 이유가 있을 때만(Secure Boot·CSM·Fast Boot이 그 예외였다).</li>
+        <li><b>안전장치는 미리 심어둔다</b> — nofail, rmdir, 재포맷 금지 확인, root 비밀번호 보유, 구 디스크 보관. 실제로 이번에 root와 grub2-reboot가 각각 한 번씩 값을 했다.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="co co-ok"><b>현재 상태 (2026-07-19)</b>듀얼부팅 설치 가이드 Phase 1~7 완주: 양방향 부팅·/mnt/archive·/mnt/shared·기본 부팅 OS 설정 완료. 잔여: Steam 라이브러리·FL Studio 배치(비중요), 개발환경 셋업 가이드(별도 세션), X300 편입 + 백업 자동화(Phase 9, 1~2주 후). 미니PJ Z2 구현은 개발환경 완료 후 착수.</div>
+</section>
+
+<footer>
+  디스크 교체·듀얼부팅 작업 QnA 기록 · 2026-07-18~19 · 동반 문서: 디스크 교체·듀얼부팅 설치 가이드 / 개발 환경 셋업 가이드<br>
+  개인 기록용 문서 (공개 레포 게시 대상 아님)
+</footer>
+
+</div>
+</body>
+</html>
