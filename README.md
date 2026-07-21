@@ -47,14 +47,21 @@
 ```
 "타 프로젝트 전달사항"이 방 간 메시지 버스다.
 
-## 현재 배치 상태 (2026-07-20 재구성)
+## 현재 배치 상태 (2026-07-21 반입)
 
-이 PC의 Downloads에서 확보 가능한 문서만 실제 배치했다. 나머지는 각 폴더 `.gitkeep`에
+Downloads에서 확보한 문서를 가이드 배치 맵대로 넣었다. 원본이 없는 것은 각 폴더 `.gitkeep`에
 "배치 예정" 목록으로 남겨 두었다 — 원본 확보 시 그 자리에 넣고 .gitkeep은 지운다.
 
-- **배치 완료**: `control/` 4종(핸드오프 v3·개설킷·레포 설계·배치 가이드), `status/` 5종(swe·ai·algo·career 요약·lang), `kit/`(CLAUDE.md·agents 4종)
-- **미반입(원본 없음)**: career·swe·ai·algo·lang·health·bike·misc 각 폴더의 운영노트·마스터플랜·프롬프트류, kit/ 환경 문서 4종
-- `status/`는 기존 문서 복사가 아니라 표준 양식으로 새로 작성했다(레포 실측 기반 초안 — 각 방이 정본으로 갱신).
+- **control/**: 핸드오프 v3·개설킷·레포 설계·배치 가이드 (4종)
+- **status/**: swe·ai·algo·career(요약)·lang (5종, 표준 양식으로 새로 작성 — 각 방이 정본으로 갱신)
+- **career/**: 커리어현황.md
+- **swe/**: 실무역량_운영문서·복습트랙·SWE미니프로젝트방 운영노트·학습자료_생성프롬프트 / `briefs/` 07-11·14·16·17 / `transfers/` 마스터방전달 2종·미니PJ방전달 1종
+- **ai/**: AI_curriculum_request·AI학습자료_생성프롬프트 (+ ROADMAP.md·ai-engineering-notes_push.zip 임시 파킹 — 실은 공개 레포 반영분, ops 소관 아님)
+- **kit/**: CLAUDE.md·agents 4종 + 에이전트시스템_구축요구사항_2026-07-19
+
+### 보류·주의
+- **실무역량_커리큘럼_마스터플랜 v2 보류**: Downloads본은 v2(A~V 21카테고리)로, 현재 공개 CURRICULUM(A~Z 26)·핸드오프 v3.1보다 구버전. 본부 정본은 **v3**여야 하므로 배치하지 않음 — v3 확보 시 swe/에.
+- **ai/의 ROADMAP·push.zip**은 공개 ai-engineering-notes 반영분을 "일단" 여기 둔 것. 공개 레포 반영은 별도 작업.
 
 ## 킷 백업·복원
 
