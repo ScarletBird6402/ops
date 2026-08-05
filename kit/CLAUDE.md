@@ -6,7 +6,7 @@
 | 경로 | 티어 | 공개 | 들어가는 것 | 담당 에이전트 |
 |---|---|---|---|---|
 | `ops/` | 운영 | **비공개** | 마스터플랜(본부판)·브리프·배정/세션 로그·킷 백업 | (메인 세션이 직접) |
-| `swe-notes/` | 산출물 | 공개 | SWE 학습자료 HTML·index·CURRICULUM | 학습자료-생성 → 게시-검증 |
+| `swe-notes/` | 산출물 | 공개 | SWE 학습자료 HTML·index·CURRICULUM | **swe-gen/ 워커 킷**(생성·큐 방식) → verify_material.py(기계 검증) → 게시-검증(광역) |
 | `ai-engineering-notes/` | 산출물 | 공개 | AI 심화 노트(notes/)·프로젝트(projects/)·ROADMAP | ai-노트-생성 → 게시-검증 |
 | `algorithm-notes/` | 산출물 | 공개 | 알고리즘 풀이+회고 | (풀이는 사용자 직접) 알고리즘-리뷰 |
 
