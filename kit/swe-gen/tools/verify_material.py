@@ -3,7 +3,7 @@
 사용: python tools/verify_material.py "output/I13 의도를 드러내는 네이밍.html"
 전 항목 PASS여야 검수 대기 자격. 정본: canon/실무역량_커리큘럼_마스터플랜_v3.md
 """
-import re, sys, html
+import re, html, sys, html
 from pathlib import Path
 from html.parser import HTMLParser
 
@@ -98,6 +98,15 @@ def main(path):
     check("4언어 별도 심화 소제목(Java·JS/TS·Python·C++)", all([has_cpp, has_py, has_java, has_js]),
           f"Java:{has_java} JS/TS:{has_js} Python:{has_py} C++:{has_cpp}")
     check("코드 예제 블록(pre) 4개 이상", ncode >= 4, f"{ncode}개")
+
+    # 4.5 링크 경로 형식 (2026-09-04 표준: ../{코드문자 카테고리명}/{파일명}) — 폴더 구조에서 동작하는 유일 형식
+    hrefs = re.findall(r'href="([^"]+\.html)"', t)
+    bad_path = [h for h in hrefs if not re.match(r'\.\./[A-Z]+ [^/]+/(?:AI-)?[A-Z]+\d+ ', html.unescape(h))]
+    check("링크 경로 형식(../카테고리 폴더/파일명)", not bad_path, bad_path[0][:50] if bad_path else "")
+
+    # 4.6 ★ 헤더 번호 형식 (규격: '★ N. 언어별 대조' + 하위 'N.1 Java —')
+    star_ok = bool(re.search(r'<h2[^>]*>\s*★\s*\d+\.\s*언어별 대조', t)) and bool(re.search(r'<h3[^>]*>\s*\d+\.\d+\s', t))
+    check("★ 절·하위 소제목 번호 형식", star_ok)
 
     # 5.5 다이어그램 정렬 (2026-08-03: flow/pre 가운데 정렬 금지)
     css = ' '.join(re.findall(r'<style[^>]*>(.*?)</style>', t, re.S))
